@@ -16,11 +16,28 @@ class Equipment(models.Model):
 		return f"{self.name} - {self.serial_number}"
 	
 class InspectionReport(models.Model):
+	job = models.ForeignKey(
+		'production.Job', 
+		on_delete=models.CASCADE,
+		related_name='inspections',
+		null=True
+	)
+
+	INSPECTION_TYPE_CHOICES = [
+		('FAI', 'First Article Inspection'),
+		('IN_PROCESS', 'In-Process'),
+		('FINAL', 'Final Inspection'),
+	]
+
+	inspection_type = models.CharField(max_length=20, choices=INSPECTION_TYPE_CHOICES, default='FAI')
+	
 	part_number = models.CharField(max_length=50)
 	part_name = models.CharField(max_length=100)
 	serial_number = models.CharField(max_length=50, blank=True)
 	fai_report_number = models.CharField(max_length=50, unique=True)
 	created_at = models.DateField(auto_now_add=True)
+	inspector_name = models.CharField(max_length=100, blank=True)
+	inspection_date = models.DateField(null=True, blank=True)
 
 	STATUS_CHOICES = [
 		('PENDING', 'Pending'),
