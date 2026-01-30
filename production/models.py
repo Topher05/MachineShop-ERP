@@ -35,7 +35,7 @@ class Contact(models.Model):
 		help_text="Main Contact for Company"
 	)
 
-	create_at = models.DateTimeField(auto_now_add=True)
+	created_at = models.DateTimeField(auto_now_add=True)
 
 	class Meta:
 		ordering = ['-is_key_contact', 'last_name']
@@ -84,7 +84,7 @@ class Job(models.Model):
 	@property
 	def is_overdue(self):
 		from django.utils import timezone
-		return self.due_date < timezone.now().date() and self.status != 'COMPLETED'
+		return self.due_date < timezone.now().date() and self.status != 'COMPLETE'
 
 	def __str__(self):
 		return f"{self.job_number} - {self.customer.name}"
@@ -142,13 +142,13 @@ class Quote(models.Model):
 
 	def calculate_totals(self):
 		lines = self.line_items.all()
-		self.subtotal = sum(Decimal(str(line.total_price)) for line in lines)
+		self.subtotal = sum(line.total_price for line in lines)
 		
 		overhead = Decimal(str(self.overhead_amount))
 		profit = Decimal(str(self.profit_amount))
 		self.total = self.subtotal + overhead + profit
 		
-		super().save(update_fields=['subtotal', 'total'])
+		self().save(update_fields=['subtotal', 'total'])
 
 	def save(self, *args, **kwargs):
 		if not self.quote_number:
