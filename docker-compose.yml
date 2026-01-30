@@ -1,8 +1,25 @@
-version: '3.8'
-
 services:
+  db:
+    image: postgres:15-alpine
+    container_name: erp_postgres
+    environment:
+      POSTGRES_DB: machineShop_erp
+      POSTGRES_USER: erp_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme123}  # Uses .env or default
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Optional: initial SQL scripts
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U erp_user -d machineShop_erp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
   web:
     build: .
+    container_name: erp_django
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
@@ -10,5 +27,13 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    depends_on:
+      db:
+        condition: service_healthy  # Wait for DB to be ready
     stdin_open: true
     tty: true
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
