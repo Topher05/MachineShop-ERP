@@ -148,7 +148,7 @@ class Quote(models.Model):
 		profit = Decimal(str(self.profit_amount))
 		self.total = self.subtotal + overhead + profit
 		
-		self().save(update_fields=['subtotal', 'total'])
+		self.save(update_fields=['subtotal', 'total'])
 
 	def save(self, *args, **kwargs):
 		if not self.quote_number:
